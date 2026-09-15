@@ -89,7 +89,7 @@ async function tryInitRedis(): Promise<void> {
       connectTimeout: 3000,
       commandTimeout: 2000,
       lazyConnect: true,
-      enableOfflineQueue: false,
+      enableOfflineQueue: true,
     });
     await client.ping();
     redisClient = client as unknown as RedisLike;
