@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lumen — Conversational Analytics</title>
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+
+<!-- ===== Auth screen ===== -->
+<div id="authScreen">
+  <div class="auth-card">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div>
+        <div class="brand-name">Lumen</div>
+        <div class="brand-sub">Conversational analytics for Tableau</div>
+      </div>
+    </div>
+
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tabLogin" onclick="setAuthTab('login')">Log in</div>
+      <div class="auth-tab" id="tabSignup" onclick="setAuthTab('signup')">Sign up</div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Email</label>
+      <input id="authEmail" type="email" placeholder="you@company.com" autocomplete="email" />
+    </div>
+    <div class="field">
+      <label class="field-label">Password</label>
+      <input id="authPassword" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter') submitAuth()" />
+    </div>
+    <button class="primary-btn" id="authSubmitBtn" onclick="submitAuth()">Log in</button>
+    <div class="auth-error" id="authError"></div>
+  </div>
+</div>
+
+<!-- ===== App shell ===== -->
+<div id="app" class="hidden">
+  <aside id="sidebar">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div>
+        <div class="brand-name">Lumen</div>
+        <div class="brand-sub">Analytics workspace</div>
+      </div>
+    </div>
+
+    <button class="new-chat-btn" onclick="newConversation()">
+      <span>＋</span><span>New chat</span>
+    </button>
+
+    <div class="sidebar-section-label">Recent</div>
+    <div id="conversationList"></div>
+
+    <div class="sidebar-footer">
+      <div class="status-row" onclick="openConnModal('tableau')" title="">
+        <span class="status-dot" id="tableauDot"></span>
+        <span class="status-icon">▤</span>
+        <div class="status-text">
+          <div class="status-title" id="tableauTitle">Connect Tableau</div>
+          <div class="status-sub hidden" id="tableauSub"></div>
+        </div>
+        <span class="chev">›</span>
+      </div>
+      <div class="status-row" onclick="openConnModal('llm')" title="">
+        <span class="status-dot" id="llmDot"></span>
+        <span class="status-icon">✦</span>
+        <div class="status-text">
+          <div class="status-title" id="llmTitle">Connect LLM</div>
+          <div class="status-sub hidden" id="llmSub"></div>
+        </div>
+        <span class="chev">›</span>
+      </div>
+      <div class="status-row" onclick="openUsageModal()" title="">
+        <span class="status-dot static"></span>
+        <span class="status-icon">◔</span>
+        <div class="status-text">
+          <div class="status-title">Usage & cost</div>
+          <div class="status-sub hidden" id="usageSub"></div>
+        </div>
+        <span class="chev">›</span>
+      </div>
+      <div class="user-row">
+        <div class="user-avatar" id="userAvatar">·</div>
+        <div class="user-email" id="userEmail"></div>
+        <button class="logout-btn" onclick="logout()">Sign out</button>
+      </div>
+    </div>
+  </aside>
+
+  <main id="main">
+    <div id="topbar">
+      <div class="topbar-title" id="convTitle">New chat</div>
+      <div class="model-badge" id="modelBadge"><span class="dot"></span><span>Not connected</span></div>
+    </div>
+
+    <div id="scopeBar">
+      <span class="scope-label">Scope:</span>
+      <select id="scopeProject" onchange="onScopeProjectChange()">
+        <option value="">All projects</option>
+      </select>
+      <span class="scope-arrow" id="scopeArrow1">›</span>
+      <select id="scopeWorkbook" onchange="onScopeWorkbookChange()" disabled>
+        <option value="">All workbooks</option>
+      </select>
+      <span class="scope-arrow" id="scopeArrow2">›</span>
+      <select id="scopeView" onchange="onScopeViewChange()" disabled>
+        <option value="">All dashboards</option>
+      </select>
+      <button class="scope-clear hidden" id="scopeClearBtn" onclick="clearScope()">✕ Clear</button>
+    </div>
+
+    <div id="chatScroll">
+      <div id="chatInner">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-mark"></div>
+          <h2>Ask anything about your Tableau data</h2>
+          <p>Lumen turns natural-language questions into live Tableau queries — using your own site and your own model, end to end.</p>
+          <div class="suggestion-row">
+            <button class="suggestion-chip" onclick="fillAndSend('What datasources do I have access to?')">What datasources do I have?</button>
+            <button class="suggestion-chip" onclick="fillAndSend('Show me the fields in my top datasource')">Explore a datasource's fields</button>
+            <button class="suggestion-chip" onclick="fillAndSend('What were total sales by region last quarter?')">Ask an analytical question</button>
+            <button class="suggestion-chip" onclick="fillAndSend('What stands out in my Executive Dashboard?')">What stands out in a dashboard?</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="composerWrap">
+      <div id="composer">
+        <textarea id="chatInput" rows="1" placeholder="Message Lumen..." onkeydown="handleComposerKey(event)" oninput="autoGrow(this)"></textarea>
+        <button class="stop-btn hidden" id="stopBtn" onclick="stopGenerating()" title="Stop generating">■</button>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled>↑</button>
+      </div>
+      <div class="composer-hint">Lumen can make mistakes. Verify important numbers against Tableau directly.</div>
+    </div>
+  </main>
+</div>
+
+<!-- ===== Tableau connection modal ===== -->
+<div class="modal-overlay hidden" id="tableauModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Connect Tableau Cloud</div>
+      <button class="modal-close" onclick="closeModal('tableauModal')">✕</button>
+    </div>
+    <div class="modal-sub">Uses a Personal Access Token — nothing is stored until it's verified against your site.</div>
+
+    <div class="field">
+      <label class="field-label">Site URL</label>
+      <input id="siteUrl" placeholder="https://your-pod.online.tableau.com" />
+    </div>
+    <div class="field">
+      <label class="field-label">Site content URL</label>
+      <input id="siteContentUrl" placeholder="leave blank for Default site" />
+    </div>
+    <div class="field">
+      <label class="field-label">Personal access token name</label>
+      <input id="patName" placeholder="my-token" />
+    </div>
+    <div class="field">
+      <label class="field-label">Personal access token secret</label>
+      <input id="patValue" type="password" placeholder="••••••••••••" />
+    </div>
+    <button class="primary-btn" id="tableauSubmitBtn" onclick="connectTableau()">Verify & save</button>
+    <button class="danger-btn hidden" id="tableauDisconnectBtn" onclick="disconnectTableau()">Disconnect</button>
+    <div class="modal-status" id="tableauStatus"></div>
+  </div>
+</div>
+
+<!-- ===== LLM connection modal ===== -->
+<div class="modal-overlay hidden" id="llmModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Connect your LLM</div>
+      <button class="modal-close" onclick="closeModal('llmModal')">✕</button>
+    </div>
+    <div class="modal-sub">Bring your own API key — billed directly by your provider, never shared.</div>
+
+    <div class="field">
+      <label class="field-label">Provider</label>
+      <select id="providerSelect" onchange="setProviderTab(this.value)">
+        <option value="anthropic">Anthropic</option>
+        <option value="openai">OpenAI</option>
+        <option value="gemini">Gemini</option>
+        <option value="nvidia">NVIDIA</option>
+        <option value="openrouter">OpenRouter</option>
+        <option value="groq">Groq</option>
+        <option value="mistral">Mistral</option>
+        <option value="deepseek">DeepSeek</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label class="field-label">API key</label>
+      <div class="field-with-btn">
+        <input id="apiKey" type="password" placeholder="sk-..." />
+        <button type="button" class="secondary-btn" id="loadModelsBtn" onclick="loadModels()">Load models</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Model</label>
+      <input id="model" placeholder="claude-sonnet-5" />
+      <select id="modelSelect" class="hidden" onchange="document.getElementById('model').value = this.value"></select>
+      <div class="field-hint hidden" id="modelLoadStatus"></div>
+    </div>
+    <button class="primary-btn" id="llmSubmitBtn" onclick="connectLlm()">Verify & save</button>
+    <button class="danger-btn hidden" id="llmDisconnectBtn" onclick="disconnectLlm()">Disconnect</button>
+    <div class="modal-status" id="llmStatus"></div>
+  </div>
+</div>
+
+<!-- ===== Usage & cost modal ===== -->
+<div class="modal-overlay hidden" id="usageModal">
+  <div class="modal modal-wide">
+    <div class="modal-header">
+      <div class="modal-title">Usage & cost</div>
+      <button class="modal-close" onclick="closeModal('usageModal')">✕</button>
+    </div>
+    <div class="modal-sub">Estimated from your own LLM provider's published rates. Costs are approximate, not a bill.</div>
+
+    <div class="usage-grid" id="usageTotals">
+      <div class="usage-stat"><div class="usage-stat-value">—</div><div class="usage-stat-label">LLM turns</div></div>
+      <div class="usage-stat"><div class="usage-stat-value">—</div><div class="usage-stat-label">Total tokens</div></div>
+      <div class="usage-stat"><div class="usage-stat-value">—</div><div class="usage-stat-label">Est. cost (USD)</div></div>
+      <div class="usage-stat"><div class="usage-stat-value">—</div><div class="usage-stat-label">Tool calls</div></div>
+      <div class="usage-stat"><div class="usage-stat-value">—</div><div class="usage-stat-label">Tool error rate</div></div>
+    </div>
+
+    <div class="usage-section-title">Daily activity</div>
+    <div class="usage-chart-wrap"><canvas id="usageChart"></canvas></div>
+    <div class="usage-empty hidden" id="usageChartEmpty">No usage yet — send a message to see activity here.</div>
+
+    <div class="tabs-row usage-tabs-row">
+      <div class="tab-btn active" id="usageTabProvider" onclick="setUsageTab('provider')">By provider</div>
+      <div class="tab-btn" id="usageTabTools" onclick="setUsageTab('tools')">Tools called</div>
+      <div class="tab-btn" id="usageTabHistory" onclick="setUsageTab('history')">History</div>
+    </div>
+
+    <div class="usage-tab-panel" id="usagePanelProvider">
+      <table class="usage-table" id="usageProviders">
+        <thead><tr><th>Provider</th><th>Turns</th><th>Tokens</th><th>Cost</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="usage-tab-panel hidden" id="usagePanelTools">
+      <table class="usage-table" id="usageTools">
+        <thead><tr><th>Tool</th><th>Calls</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="usage-tab-panel hidden" id="usagePanelHistory">
+      <table class="usage-table usage-table-history" id="usageRecent">
+        <thead><tr><th>When</th><th>What happened</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="modal-status" id="usageStatus"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>
