@@ -1,0 +1,220 @@
+================================================================================
+BYOK PLATFORM — SAMPLE USER QUESTIONS AND THE TOOLS THAT ANSWER THEM
+================================================================================
+This file lists example questions a user might ask, paired with the
+tool(s) that answer each one. When a new tool is added, update this file
+too — every tool in src/tools/*.ts must have at least one question here.
+
+Total tools: 64
+  - Content tools (23): list_projects, list_workbooks, list_flows,
+    list_virtual_connections, search_content, list_workbook_views,
+    list_site_views, get_view_data, get_view_image, get_dashboard_summary,
+    get_workbook_details, get_workbook_thumbnail, get_view_pdf,
+    list_workbook_revisions, list_tags, add_tags, remove_tags,
+    list_favorites, add_favorite, remove_favorite, list_custom_views,
+    get_custom_view_image, get_data_quality_warning
+
+  - Datasource tools (5): list_datasources, list_workbook_datasources,
+    get_datasource_metadata, query_datasource, get_field_values
+
+  - Pulse tools (2): list_pulse_metrics, get_pulse_metric_insight
+
+  - Semantic tools (5): get_datasource_glossary, get_field_usage,
+    get_metric_definition, get_dashboard_insights, recommend_visualization
+
+  - Analytical tools (17): compare_periods, explain_change,
+    anomaly_detection, forecast_metric, get_metric_history,
+    get_data_quality_warnings, get_field_lineage, search_fields,
+    cross_datasource_query, rank_categories, pivot_cross_tab,
+    rollup_time_series, correlation_analysis, field_statistics,
+    bucketize_metric, share_of_total, get_summary_table
+
+  - Admin tools (12): list_users, check_permissions, refresh_extract_status,
+    query_workbook_permissions, query_view_permissions,
+    query_datasource_permissions, list_subscriptions, list_data_driven_alerts,
+    list_schedules, list_groups, get_group_members, get_server_info
+
+================================================================================
+CONTENT TOOLS (23) — PROJECTS & FOLDERS
+================================================================================
+- What projects/folders exist on my site?                     -> list_projects
+- Show me all projects I have access to                       -> list_projects
+- Which project is my "Sales" data stored under?              -> list_projects
+
+================================================================================
+CONTENT TOOLS (23) — WORKBOOKS, FLOWS & CONNECTIONS
+================================================================================
+- What workbooks are published on my site?                    -> list_workbooks
+- Do I have a workbook named "Q3 Report"?                     -> list_workbooks
+- List all workbooks inside the "Marketing" project           -> list_workbooks
+- What Tableau Prep flows do I have?                          -> list_flows
+- List my virtual connections                                 -> list_virtual_connections
+
+================================================================================
+CONTENT TOOLS (23) — SEARCHING CONTENT
+================================================================================
+- Search for anything named "Revenue" on my site              -> search_content
+- Find workbooks and datasources related to "Customer"        -> search_content
+- Where is the "Executive Dashboard" located?                 -> search_content
+
+================================================================================
+CONTENT TOOLS (23) — VIEWS / DASHBOARDS
+================================================================================
+- What views are inside the workbook "Sales 2025"?            -> list_workbook_views
+- List all dashboards across my whole site                    -> list_site_views
+- Show me every view that exists on my site                   -> list_site_views
+- Are there any dashboards named "KPI Overview"?              -> list_site_views
+
+================================================================================
+CONTENT TOOLS (23) — READING VIEW DATA
+================================================================================
+- Show me the raw data behind the "Monthly Sales" view        -> get_view_data
+- What are the values in the "Regional Breakdown" sheet?      -> get_view_data
+- Give me a text overview/summary of the whole "Executive
+  Dashboard" (all its charts at once)                         -> get_dashboard_summary
+- Summarize everything on the "Executive Dashboard"           -> get_dashboard_summary
+- Show me a picture of what the "Executive Dashboard"
+  actually looks like in Tableau                              -> get_view_image
+- How does the "Sales by Region" dashboard look visually?     -> get_view_image
+- Export the "Monthly Sales" view as a PDF                    -> get_view_pdf
+- Give me a PDF copy of the "Executive Dashboard"             -> get_view_pdf
+
+================================================================================
+CONTENT TOOLS (23) — WORKBOOK METADATA, REVISIONS & THUMBNAILS
+================================================================================
+- Tell me about the "Sales 2025" workbook — owner, project,
+  when it was last updated, what tags it has                 -> get_workbook_details
+- Show me a thumbnail of the "Sales 2025" workbook           -> get_workbook_thumbnail
+- What's the revision history of the "Sales 2025" workbook?  -> list_workbook_revisions
+
+================================================================================
+CONTENT TOOLS (23) — TAGS
+================================================================================
+- What tags does the "Sales 2025" workbook have?             -> list_tags
+- Add the tag "priority" to the "Sales 2025" workbook        -> add_tags
+- Remove the tag "legacy" from the "Sales 2025" workbook     -> remove_tags
+
+================================================================================
+CONTENT TOOLS (23) — FAVORITES
+================================================================================
+- What have I favorited in Tableau?                          -> list_favorites
+- Favorite the "Monthly Sales" view for me                   -> add_favorite
+- Un-favorite the "Monthly Sales" view                       -> remove_favorite
+
+================================================================================
+CONTENT TOOLS (23) — CUSTOM VIEWS & DATA QUALITY
+================================================================================
+- What custom views exist (on my site / for this workbook)?  -> list_custom_views
+- Show me a preview image of the "Q1 C-suite" custom view    -> get_custom_view_image
+- Are there any data-quality warnings on the "Orders"
+  datasource / workbook?                                     -> get_data_quality_warning
+
+================================================================================
+DATASOURCE TOOLS (5)
+================================================================================
+- What datasources exist on my site?                          -> list_datasources
+- List all published datasources                              -> list_datasources
+- Which datasource(s) is the workbook "Orders Analysis"
+  actually built on?                                          -> list_workbook_datasources
+- What fields/columns are available in datasource X?          -> get_datasource_metadata
+- Show me the fields and types in the "Orders" datasource     -> get_datasource_metadata
+- What is total Revenue by Region?                            -> query_datasource
+- Show me monthly Sales over the last 12 months               -> query_datasource
+- What are the top 10 products by Profit?                     -> query_datasource
+- How many orders came from the East region last quarter?     -> query_datasource
+- What distinct values does the "Segment" field have?         -> get_field_values
+- List the possible values in the "Country" field             -> get_field_values
+
+================================================================================
+PULSE TOOLS (2)
+================================================================================
+- What Pulse metrics are defined on my site?                  -> list_pulse_metrics
+- Show me all my Pulse metric definitions                     -> list_pulse_metrics
+- What is the current value of the "Revenue" Pulse metric?    -> get_pulse_metric_insight
+
+================================================================================
+SEMANTIC TOOLS (5)
+================================================================================
+- What does the "Profit" field mean, and how is it calculated?  -> get_datasource_glossary
+- Explain what each field in the "Orders" datasource means    -> get_datasource_glossary
+- Where is the "Revenue" field used across my site?           -> get_field_usage
+- Which dashboards use the "Region" dimension?                -> get_field_usage
+- What exactly does the "Revenue" Pulse metric measure, and
+  how is its formula built?                                   -> get_metric_definition
+- What is the formula behind the "Active Users" metric?       -> get_metric_definition
+- What are the highlights/statistics of the "Executive
+  Dashboard" (min, max, avg, top values)?                     -> get_dashboard_insights
+- Give me quick computed stats about the "Sales by Region" view  -> get_dashboard_insights
+- How should I visualize Revenue vs Profit?                   -> recommend_visualization
+- What chart type should I use for a sales trend over time?   -> recommend_visualization
+
+================================================================================
+ANALYTICAL TOOLS (17)
+================================================================================
+- How did Revenue compare this month vs last month?           -> compare_periods
+- Show me total sales MoM / QoQ / YoY with % change           -> compare_periods
+- Compare orders this quarter vs same quarter last year       -> compare_periods
+- Why did my Revenue go up/down last month? What drove it?    -> explain_change
+- Which products contributed most to the sales change?        -> explain_change
+- Were there any abnormal/spike days or months for Revenue?   -> anomaly_detection
+- When did web traffic behave unusually vs its normal range?  -> anomaly_detection
+- Forecast/predict next quarter's Revenue                     -> forecast_metric
+- Where is my sales trend heading over the next 6 months?     -> forecast_metric
+- Show me the trend/history of my "Revenue" Pulse metric      -> get_metric_history
+- Is this datasource stale or flagged with quality warnings?  -> get_data_quality_warnings
+- Can I trust the "Orders" datasource?                        -> get_data_quality_warnings
+- Where does the "Profit" calculated field come from upstream? -> get_field_lineage
+- What source columns feed my "Margin" field?                 -> get_field_lineage
+- Find a field named something like "profit margin" anywhere  -> search_fields
+- I need to find the "Active Customers" field I've heard of   -> search_fields
+- Compare Revenue across my Sales and Marketing datasources   -> cross_datasource_query
+- Which datasource drives the most revenue, side by side?     -> cross_datasource_query
+- What are the top 10 products by Revenue this quarter?       -> rank_categories
+- Which regions perform worst (bottom 5) by profit?           -> rank_categories
+- Show me Revenue by Region, one column per month             -> pivot_cross_tab
+- A matrix of Orders by Category and Order Date month         -> pivot_cross_tab
+- Show me monthly / weekly / quarterly Revenue for this year  -> rollup_time_series
+- Do Revenue and Ad Spend correlate?                          -> correlation_analysis
+- Does higher price go with higher profit?                    -> correlation_analysis
+- Describe / profile the Revenue field (min, max, avg, nulls) -> field_statistics
+- How is order value distributed / what's the price histogram? -> bucketize_metric
+- What % of Revenue is each Product?                          -> share_of_total
+- How has each product's share changed vs last quarter?       -> share_of_total
+- Give me the key numbers / headline summary for Revenue      -> get_summary_table
+
+================================================================================
+ADMIN TOOLS (12) — USERS, GROUPS & PERMISSIONS
+================================================================================
+- Who are the users on my site and their roles?              -> list_users
+- Check permissions on workbook X                            -> check_permissions
+- Who has access to the "Sales 2025" workbook?               -> query_workbook_permissions
+- Who can see the "Executive Dashboard" view, and with
+  what permissions?                                          -> query_view_permissions
+- Who has access to the "Orders" datasource?                 -> query_datasource_permissions
+- What groups exist on my site?                              -> list_groups
+- Who's in the "Sales Team" group?                           -> get_group_members
+
+================================================================================
+ADMIN TOOLS (12) — SUBSCRIPTIONS, ALERTS & SCHEDULES
+================================================================================
+- What am I subscribed to in Tableau?                        -> list_subscriptions
+- What data-driven alerts have been set up?                  -> list_data_driven_alerts
+- When does the "Orders" extract refresh?                    -> list_schedules
+- What is the extract refresh status of datasource X?        -> refresh_extract_status
+- What version of Tableau is this site running?              -> get_server_info
+
+================================================================================
+MULTI-STEP / COMBINED EXAMPLES (chain several tools)
+================================================================================
+- "What's the total revenue by region, and what chart should I use for it?" -> list_datasources / list_workbook_datasources -> get_datasource_metadata -> query_datasource -> recommend_visualization
+
+- "Give me a full breakdown of my Executive Dashboard and explain what the key metric means" -> list_workbook_views -> get_dashboard_summary -> get_metric_definition (or get_datasource_glossary)
+
+- "Find where the Profit field is used, then show me how it's trending this year" -> get_field_usage -> get_datasource_metadata -> query_datasource
+
+- "Which dashboards exist, what are the highlights, and how do they look?" -> list_site_views -> get_dashboard_insights -> get_view_image
+
+================================================================================
+NOTE: This file is maintained alongside src/tools/*.ts. Whenever a new
+tool is added to the platform, add matching sample questions here.
+================================================================================

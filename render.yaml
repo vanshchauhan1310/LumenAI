@@ -1,0 +1,48 @@
+﻿# Render Blueprint - deploys this app as a web service on Render, with the
+# database hosted on Supabase (managed Postgres).
+#
+# Setup:
+#   1. Create a Supabase project at https://supabase.com (free tier works).
+#   2. In the Supabase SQL Editor, run supabase_schema.sql once to create the
+#      tables (users, connections, conversations, messages, usage_events).
+#   3. Copy the Project URL and service_role key from Project Settings -> API.
+#   4. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in the Render dashboard
+#      after the first deploy (Environment -> Environment Variables).
+#
+# JWT_SECRET and ENCRYPTION_KEY are deliberately NOT auto-generated here
+# (sync: false) - ENCRYPTION_KEY must decode to EXACTLY 32 bytes
+# (src/lib/crypto.ts throws otherwise), which Render's built-in
+# generateValue doesn't guarantee. Generate both yourself and paste them into
+# the Render dashboard after the first deploy:
+#   openssl rand -base64 32
+
+services:
+  - type: web
+    name: lumen-byok-platform
+    runtime: node
+    plan: starter
+    region: oregon
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: 20.18.0
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: ENCRYPTION_KEY
+        sync: false
+      - key: TABLEAU_API_VERSION
+        value: "3.24"
+      # Optional but strongly recommended: a shared Redis cache (free tiers at
+      # Redis Cloud / Upstash). Multi-tier caching (memory + Redis) keeps
+      # discovery lists and datasource metadata warm across processes and
+      # restarts — the single biggest response-time win after the fast-path
+      # fixes. Set REDIS_URL in the Render dashboard as a secret:
+      #   REDIS_URL=rediss://user:pass@host:port
+      - key: REDIS_URL
+        sync: false
