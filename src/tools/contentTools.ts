@@ -149,6 +149,19 @@ export const contentToolDefinitions = [
     },
   },
   {
+    name: "get_workbook_link",
+    description:
+      "Get the direct Tableau web link for a workbook by name. Use this when the user asks 'what's the link to workbook X' or 'open workbook Y' — it searches by name and returns the URL without needing the workbook ID first. Optionally filter by project name if multiple workbooks share the same name.",
+    input_schema: {
+      type: "object",
+      properties: {
+        name: { type: "string", description: "Workbook name (exact or partial match)" },
+        projectName: { type: "string", description: "Optional exact project name to disambiguate when multiple workbooks have the same name" },
+      },
+      required: ["name"],
+    },
+  },
+  {
     name: "get_workbook_details",
     description:
       "Full metadata for one published workbook: owner, project, tags, size, created/updated timestamps, description and its direct link. Richer than the page-level fields on list_workbooks. Call this for 'who owns X', 'when was X last changed', 'how big is X', 'what are X's tags'.",
@@ -334,6 +347,7 @@ const schemas = {
     workbookId: z.string(),
     maxLinesPerSheet: clampedLimit(30, 20),
   }),
+  get_workbook_link: z.object({ name: z.string().min(1), projectName: z.string().optional() }),
   get_workbook_details: z.object({ workbookId: z.string() }),
   get_workbook_thumbnail: z.object({ workbookId: z.string() }),
   get_view_pdf: z.object({ viewId: z.string() }),
@@ -700,6 +714,53 @@ async function getWorkbookDetails(client: TableauClient, args: z.infer<typeof sc
   };
 }
 
+async function getWorkbookLink(client: TableauClient, args: z.infer<typeof schemas.get_workbook_link>) {
+  const userId = client.getUserId();
+  let all = await cacheGet<any[]>("wb_list", `all_${userId}`);
+  if (!all) {
+    all = await fetchAll(client, "/sites/{siteId}/workbooks", "workbooks.workbook");
+    await cacheSet("wb_list", `all_${userId}`, all);
+  }
+  let filtered = all.filter((w: any) => w.name?.toLowerCase().includes(args.name.toLowerCase()));
+  if (args.projectName) {
+    const term = args.projectName.toLowerCase();
+    filtered = filtered.filter((w: any) => w.project?.name?.toLowerCase() === term);
+  }
+  if (filtered.length === 0) {
+    return { error: `No workbook found matching "${args.name}"${args.projectName ? ` in project "${args.projectName}"` : ""}.` };
+  }
+  if (filtered.length > 1) {
+    const names = filtered.map((w: any) => `${w.name} (project: ${w.project?.name}, id: ${w.id})`).join(", ");
+    return { error: `Multiple workbooks match "${args.name}"${args.projectName ? ` in project "${args.projectName}"` : ""}: ${names}. Please specify projectName or use get_workbook_details with the exact workbookId.` };
+  }
+  const wb = filtered[0];
+
+  // Prefer webpageUrl from the API. If it's missing or looks like it contains
+  // the numeric ID (which produces a broken link), fetch the full workbook
+  // details which reliably returns the correct webpageUrl.
+  let link = wb.webpageUrl || client.getContentUrl("workbooks", wb.contentUrl);
+  const looksLikeNumericId = /\/workbooks\/\d+$/.test(link);
+  if (!wb.webpageUrl || looksLikeNumericId) {
+    try {
+      const detail = await client.restRequest<any>("GET", `/sites/{siteId}/workbooks/${wb.id}`);
+      const fullWb = detail?.workbook;
+      if (fullWb?.webpageUrl) {
+        link = fullWb.webpageUrl;
+      } else if (fullWb?.contentUrl && !/^\d+$/.test(fullWb.contentUrl)) {
+        link = client.getContentUrl("workbooks", fullWb.contentUrl);
+      }
+    } catch {
+      // fall back to whatever link we had
+    }
+  }
+
+  return {
+    name: wb.name,
+    project: wb.project?.name,
+    link,
+  };
+}
+
 async function getWorkbookThumbnail(client: TableauClient, args: z.infer<typeof schemas.get_workbook_thumbnail>) {
   const png = await client.restRequestBinary(`/sites/{siteId}/workbooks/${args.workbookId}/previewImage`);
   const jpeg = await resizeAndCompress(png, MAX_IMAGE_WIDTH, JPEG_QUALITY);
@@ -868,6 +929,7 @@ export const contentHandlers: Record<string, (client: TableauClient, args: any) 
   get_view_data: (c, a) => getViewData(c, schemas.get_view_data.parse(a ?? {})),
   get_view_image: (c, a) => getViewImage(c, schemas.get_view_image.parse(a ?? {})),
   get_dashboard_summary: (c, a) => getDashboardSummary(c, schemas.get_dashboard_summary.parse(a ?? {})),
+  get_workbook_link: (c, a) => getWorkbookLink(c, schemas.get_workbook_link.parse(a ?? {})),
   get_workbook_details: (c, a) => getWorkbookDetails(c, schemas.get_workbook_details.parse(a ?? {})),
   get_workbook_thumbnail: (c, a) => getWorkbookThumbnail(c, schemas.get_workbook_thumbnail.parse(a ?? {})),
   get_view_pdf: (c, a) => getViewPdf(c, schemas.get_view_pdf.parse(a ?? {})),
