@@ -700,6 +700,8 @@ async function getWorkbookDetails(client: TableauClient, args: z.infer<typeof sc
   const wb = data?.workbook;
   if (!wb) return { error: `Workbook ${args.workbookId} not found or not accessible.` };
   const tags = (Array.isArray(wb.tags?.tag) ? wb.tags.tag : wb.tags?.tag ? [wb.tags.tag] : []).map((t: any) => t.label);
+  let link = wb.webpageUrl || client.getContentUrl("workbooks", wb.contentUrl);
+  link = link.replace(/\.+$/, "").trim();
   return {
     id: wb.id,
     name: wb.name,
@@ -710,7 +712,7 @@ async function getWorkbookDetails(client: TableauClient, args: z.infer<typeof sc
     createdAt: wb.createdAt ?? null,
     updatedAt: wb.updatedAt ?? null,
     tags,
-    link: wb.webpageUrl || client.getContentUrl("workbooks", wb.contentUrl),
+    link,
   };
 }
 
