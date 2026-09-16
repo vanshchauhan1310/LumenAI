@@ -754,6 +754,8 @@ async function getWorkbookLink(client: TableauClient, args: z.infer<typeof schem
     }
   }
 
+  // Strip any trailing period or whitespace that Tableau sometimes includes
+  link = link.replace(/\.+$/, "").trim();
   return {
     name: wb.name,
     project: wb.project?.name,
